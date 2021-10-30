@@ -1,0 +1,147 @@
+
+<html>
+<body>
+      
+<h3>Retirement Savings Calculator</h3>
+
+<p>
+	Fill in the fields and click the Calculate button to determine how long it'll take to save for retirement.
+</p>
+  
+<div id="divUI">
+
+	<label>Initial Savings:</label><br />
+	<input id="inputSavingsInitial" type="number" value="0"></input><br />
+	
+	<label>Return on Investment per Period Before Retirement:</label><br />
+	<input id="inputReturnOnInvestmentPerPeriodBeforeRetirement" type="number" value=".1"></input><br />
+
+	<label>New Savings per Period:</label><br />
+	<input id="inputSavingsNewPerPeriod" type="number" value=".5"></input><br />
+
+	<label>Return on Investment per Period After Retirement:</label><br />
+	<input id="inputReturnOnInvestmentPerPeriodAfterRetirement" type="number" value=".05"></input><br />
+
+	<label>Retirement Income Desired per Period:</label><br />
+	<input id="inputRetirementIncomePerPeriod" value=".5"></input><br />
+
+	<button onclick="buttonCalculate_Clicked();">Calculate</button><br />
+
+	<label>Savings at Retirement:</label><br />
+	<input id="inputSavingsAtRetirement" disabled="true"></input><br />
+
+	<label>Periods Required:</label><br />
+	<input id="inputPeriodsRequired" disabled="true"></input><br />
+
+</div>
+
+<script type="text/javascript">
+
+/*
+
+Derivation of the "Savings Plan Equation":
+
+n = number of periods (usually years)
+s_n = savings after n periods
+d = new savings per period
+r = 1 + return on investment per period
+
+Start with the first two periods:
+
+s1 = d + s0r
+s2 = d + s1r
+   = d + (d + s0r)r
+   = d + dr + s0r^2
+   = d(1 + r) + s0r^2
+
+Extrapolate from n = 2 to find the pattern for any n:
+
+s_n = d(1 + r + r^2 + ... + r^(n-1)) + s0r^n
+
+Multiply each term in the sequence ( 1 + ... r^(n-1) ) 
+by (r - 1)/(r - 1).  
+All but the first and last terms 
+in the resulting sequence cancel:
+
+s_n = d ( (r^n - 1) / (r - 1) ) + s0r^n
+
+Now solve for n to find 
+the number of periods required to get from s0 to s_n:
+
+s_n = d ( (r^n - 1) / (r-1) ) + s0r^n
+s_n = d ( (r^n - 1) / (r-1) ) + ( s0r^n(r-1) / (r-1) )
+s_n = d ( (r^n - 1) / (r-1) ) + ( s0r^(n+1) -s0r^n ) / (r-1)
+s_n = (dr^n - d) / (r-1) + ( s0r^(n+1) -s0r^n ) / (r-1)
+s_n = ( dr^n - d + s0r^(n+1) -s0r^n ) / (r-1)
+s_n * (r - 1) = dr^n - d + s0r^(n+1) - s0r^n
+s_n * (r - 1) + d = dr^n + s0r^(n+1) - s0r^n
+s_n * (r - 1) + d = r^n(d + s0r - s0)
+(s_n * (r - 1) + d) / (d + s0r - s0) = r^n
+log_r ( (s_n * (r - 1) + d) / (d + s0r - s0) ) = log_r r^n
+log_r ( (s_n * (r - 1) + d) / (d + s0r - s0) ) = n
+n = log_r ( (s_n * (r - 1) + d) / (d + s0r - s0) )
+
+Change the logarithm's base from r to 10:
+log_a x = log_b x / log_b a
+
+n = log ( (s_n * (r - 1) + d) / (d + s0r - s0) ) / log r
+n = log ( (s_n * (r - 1) + d) / (d + s0(r - 1)) ) / log r
+
+*/
+
+// ui event handlers
+
+function buttonCalculate_Clicked()
+{
+	var inputSavingsInitial
+		= document.getElementById("inputSavingsInitial");
+	var inputReturnOnInvestmentPerPeriodBeforeRetirement
+		= document.getElementById("inputReturnOnInvestmentPerPeriodBeforeRetirement");
+	var inputSavingsNewPerPeriod
+		= document.getElementById("inputSavingsNewPerPeriod");
+	var inputReturnOnInvestmentPerPeriodAfterRetirement
+		= document.getElementById("inputReturnOnInvestmentPerPeriodAfterRetirement");
+	var inputRetirementIncomePerPeriod
+		= document.getElementById("inputRetirementIncomePerPeriod");
+	var inputPeriodsRequired 
+		= document.getElementById("inputPeriodsRequired");
+
+	var savingsInitial = 
+		parseFloat(inputSavingsInitial.value);
+	var returnOnInvestmentPerPeriodBeforeRetirement = 
+		parseFloat(inputReturnOnInvestmentPerPeriodBeforeRetirement.value);
+	var savingsNewPerPeriod = 
+		parseFloat(inputSavingsNewPerPeriod.value);
+	var returnOnInvestmentPerPeriodAfterRetirement = 
+		parseFloat(inputReturnOnInvestmentPerPeriodAfterRetirement.value);
+	var retirementIncomePerPeriod = 
+		parseFloat(inputRetirementIncomePerPeriod.value);
+	
+	var savingsAtRetirement = 
+		retirementIncomePerPeriod 
+		/ returnOnInvestmentPerPeriodAfterRetirement;
+	inputSavingsAtRetirement.value = savingsAtRetirement;
+
+	var periodsRequired = Math.log
+	(
+		( 
+			savingsAtRetirement 
+			* returnOnInvestmentPerPeriodBeforeRetirement
+			+ savingsNewPerPeriod 
+		)
+		/ 
+		(
+			savingsNewPerPeriod
+			+ savingsInitial
+			* returnOnInvestmentPerPeriodBeforeRetirement
+		) 		
+	)
+	/ Math.log(1 + returnOnInvestmentPerPeriodBeforeRetirement);
+
+	inputPeriodsRequired.value = periodsRequired;
+}
+
+</script>
+
+</body>
+</html>
